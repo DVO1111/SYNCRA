@@ -1,0 +1,7 @@
+project_id = "wnwgtfbznvjenflliuhg"
+
+[functions.verify-tax-id]
+verify_jwt = false
+
+[functions.process-tax-payment]
+verify_jwt = false
