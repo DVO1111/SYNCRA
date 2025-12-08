@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.process-tax-payment]
 verify_jwt = false
+
+[functions.admin-settings]
+verify_jwt = false
+
+[functions.process-tax]
+verify_jwt = false
