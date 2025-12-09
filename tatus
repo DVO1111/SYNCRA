@@ -1,0 +1,159 @@
+[1mdiff --git a/supabase/functions/verify-tax-id/index.ts b/supabase/functions/verify-tax-id/index.ts[m
+[1mindex 808db8a..fe7dc87 100644[m
+[1m--- a/supabase/functions/verify-tax-id/index.ts[m
+[1m+++ b/supabase/functions/verify-tax-id/index.ts[m
+[36m@@ -1,4 +1,5 @@[m
+ import { corsHeaders } from '../_shared/cors.ts';[m
+[32m+[m[32m/// <reference lib="deno.unstable" />[m
+ [m
+ Deno.serve(async (req) => {[m
+   // Handle CORS preflight requests[m
+[36m@@ -7,81 +8,90 @@[m [mDeno.serve(async (req) => {[m
+   }[m
+ [m
+   try {[m
+[31m-    const { taxId } = await req.json();[m
+[31m-    [m
+[31m-    console.log('Verifying tax ID:', taxId);[m
+[32m+[m[32m    const {[m[41m [m
+[32m+[m[32m      walletAddress,[m[41m [m
+[32m+[m[32m      cryptoAmount,[m[41m [m
+[32m+[m[32m      cryptoCurrency,[m[41m [m
+[32m+[m[32m      taxAmount,[m[41m [m
+[32m+[m[32m      taxType,[m[41m [m
+[32m+[m[32m      signature[m[41m [m
+[32m+[m[32m    } = await req.json();[m
+[32m+[m
+[32m+[m[32m    console.log('Processing payment:', {[m
+[32m+[m[32m      walletAddress,[m
+[32m+[m[32m      cryptoAmount,[m
+[32m+[m[32m      cryptoCurrency,[m
+[32m+[m[32m      taxAmount,[m
+[32m+[m[32m      taxType[m
+[32m+[m[32m    });[m
+ [m
+[31m-    if (!taxId) {[m
+[31m-      return new Response([m
+[31m-        JSON.stringify({ [m
+[31m-          success: false, [m
+[31m-          error: 'Tax ID is required' [m
+[31m-        }),[m
+[31m-        { [m
+[31m-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },[m
+[31m-          status: 400 [m
+[31m-        }[m
+[31m-      );[m
+[32m+[m[32m    // Validate required fields[m
+[32m+[m[32m    if (!walletAddress || !cryptoAmount || !cryptoCurrency || taxAmount === undefined || taxAmount === null || !taxType) {[m
+[32m+[m[32m      throw new Error('Missing required payment fields');[m
+     }[m
+ [m
+[31m-    // Validate tax ID format[m
+[31m-    const cleanTaxId = taxId.trim().toUpperCase();[m
+[31m-    [m
+[31m-    // Check for valid TIN format (10 digits) or Taxpayer ID format (N-XXXXXXXX)[m
+[31m-    const isTIN = /^\d{10}$/.test(cleanTaxId);[m
+[31m-    const isTaxpayerID = /^N-\d{8}$/.test(cleanTaxId);[m
+[31m-    [m
+[31m-    if (!isTIN && !isTaxpayerID) {[m
+[31m-      return new Response([m
+[31m-        JSON.stringify({ [m
+[31m-          success: false, [m
+[31m-          error: 'Invalid Tax ID format. Please enter a 10-digit TIN or N-XXXXXXXX format.' [m
+[31m-        }),[m
+[31m-        { [m
+[31m-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },[m
+[31m-          status: 400 [m
+[31m-        }[m
+[31m-      );[m
+[32m+[m[32m    // Validate positive amounts[m
+[32m+[m[32m    if (taxAmount <= 0 || parseFloat(cryptoAmount) <= 0) {[m
+[32m+[m[32m      throw new Error('Payment amount must be greater than zero');[m
+     }[m
+ [m
+[31m-    // TODO: Add real LIRS API integration here when credentials are available[m
+[31m-    // For now, return success with a mock taxpayer name[m
+[31m-    const mockNames = [[m
+[31m-      'ADEYEMI OLUWASEUN JOHNSON',[m
+[31m-      'NKECHI AMARA OKONKWO',[m
+[31m-      'IBRAHIM MOHAMMED BELLO',[m
+[31m-      'CHIOMA GRACE EZE',[m
+[31m-      'OLUWATOBI DAVID AKINOLA'[m
+[31m-    ];[m
+[31m-    [m
+[31m-    // Generate a consistent name based on the tax ID[m
+[31m-    const nameIndex = parseInt(cleanTaxId.replace(/\D/g, '').slice(-1)) % mockNames.length;[m
+[31m-    [m
+[31m-    console.log('Tax ID verified successfully:', cleanTaxId);[m
+[32m+[m[32m    // Verify signature[m
+[32m+[m[32m    if (signature !== 'verified') {[m
+[32m+[m[32m      throw new Error('Payment signature not verified');[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // Generate unique transaction ID[m
+[32m+[m[32m    const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;[m
+[32m+[m
+[32m+[m[32m    // Simulate payment processing[m
+[32m+[m[32m    // In production, this would:[m
+[32m+[m[32m    // 1. Convert crypto to NGN via Paj Cash[m
+[32m+[m[32m    // 2. Settle to LIRS via Remita[m
+[32m+[m[32m    // 3. Generate NFT receipt on blockchain[m
+[32m+[m[32m    console.log('Payment processed successfully:', transactionId);[m
+[32m+[m
+[32m+[m[32m    const paymentDetails = {[m
+[32m+[m[32m      transactionId,[m
+[32m+[m[32m      walletAddress,[m
+[32m+[m[32m      cryptoAmount: parseFloat(cryptoAmount),[m
+[32m+[m[32m      cryptoCurrency,[m
+[32m+[m[32m      taxAmount,[m
+[32m+[m[32m      taxType,[m
+[32m+[m[32m      timestamp: new Date().toISOString(),[m
+[32m+[m[32m      status: 'completed',[m
+[32m+[m[32m      conversionRate: cryptoCurrency === 'SOL' ? 0.012 : 1,[m
+[32m+[m[32m      ngnReceived: taxAmount,[m
+[32m+[m[32m      processingFee: 0,[m
+[32m+[m[32m      netAmount: taxAmount[m
+[32m+[m[32m    };[m
+ [m
+     return new Response([m
+[31m-      JSON.stringify({ [m
+[32m+[m[32m      JSON.stringify({[m
+         success: true,[m
+[31m-        taxpayerName: mockNames[nameIndex],[m
+[31m-        taxId: cleanTaxId,[m
+[31m-        verified: true[m
+[32m+[m[32m        transactionId,[m
+[32m+[m[32m        details: paymentDetails,[m
+[32m+[m[32m        message: 'Payment processed successfully'[m
+       }),[m
+[31m-      { [m
+[32m+[m[32m      {[m
+         headers: { ...corsHeaders, 'Content-Type': 'application/json' },[m
+[31m-        status: 200 [m
+[32m+[m[32m        status: 200[m
+       }[m
+     );[m
+ [m
+   } catch (error) {[m
+[31m-    console.error('Error verifying tax ID:', error);[m
+[32m+[m[32m    console.error('Payment processing error:', error);[m
+[32m+[m[41m    [m
+[32m+[m[32m    const errorMessage = error instanceof Error ? error.message : 'Payment processing failed';[m
+[32m+[m[41m    [m
+     return new Response([m
+[31m-      JSON.stringify({ [m
+[31m-        success: false, [m
+[31m-        error: 'Failed to verify Tax ID. Please try again.' [m
+[32m+[m[32m      JSON.stringify({[m
+[32m+[m[32m        success: false,[m
+[32m+[m[32m        error: errorMessage,[m
+[32m+[m[32m        details: null[m
+       }),[m
+[31m-      { [m
+[32m+[m[32m      {[m
+         headers: { ...corsHeaders, 'Content-Type': 'application/json' },[m
+[31m-        status: 500 [m
+[32m+[m[32m        status: 400[m
+       }[m
+     );[m
+   }[m
